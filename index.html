@@ -4,14 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ace — Discord bots &amp; web interfaces</title>
-<meta name="description" content="ace (@acearooni13) builds Discord bots, dashboards and web interfaces. TypeScript, Node, React, Python.">
+<meta name="description" content="ace (@acearooni13) builds Discord bots, dashboards and web interfaces. JavaScript, Node, React, Python.">
 <meta name="theme-color" content="#08080a">
 <meta property="og:title" content="ace — Discord bots & web interfaces">
 <meta property="og:description" content="Discord bots, dashboards and web interfaces, shipped clean.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://cdn.discordapp.com/avatars/1394348907773038775/37aefc7f330033b5888ab2a26360026b.png?size=256">
 
-<!-- custom isometric cube mark — no stock icons -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2308080a'/%3E%3Cpath d='M16 4 27 10.5 16 17 5 10.5Z' fill='%23d9ff57'/%3E%3Cpath d='M5 10.5 16 17v11.5L5 22Z' fill='%23f1f1f3' fill-opacity='.92'/%3E%3Cpath d='M16 17 27 10.5V22L16 28.5Z' fill='%23f1f1f3' fill-opacity='.42'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2308080a'/%3E%3Cpath d='M16 4 27 10.5 16 17 5 10.5Z' fill='%23d9ff57'/%3E%3Cpath d='M5 10.5 16 17v11.5L5 22Z' fill='%23f1f1f3' fill-opacity='.92'/%3E%3Cpath d='M16 17 27 10.5V22L16 28.5Z' fill='%23f1f1f3' fill-opacity='.42'/%3E%3C/svg%3E">
 
@@ -19,17 +18,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-<!--
-  ─────────────────────────────────────────────────────────────
-  EDIT THESE:
-  1. Stats + project numbers are placeholders → your real ones
-  2. TIMEZONE constant in the script if you ever move
-  Discord id / avatar are already wired to your account.
-  ─────────────────────────────────────────────────────────────
--->
-
 <style>
-/* ── tokens ─────────────────────────────────────────────── */
+
 :root{
   --bg:#08080a;
   --tile:#0b0b0e;
@@ -46,7 +36,6 @@
   --maxw:1160px;
 }
 
-/* ── base ───────────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{
@@ -57,7 +46,7 @@ body{
   overflow-x:hidden;
   padding-top:70px;
 }
-body::before{ /* film grain */
+body::before{ 
   content:"";position:fixed;inset:0;z-index:9000;pointer-events:none;opacity:.026;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
 }
@@ -69,7 +58,6 @@ p{margin:0}
 ::selection{background:var(--accent);color:#08080a}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
 
-/* ── 3d scene canvas ────────────────────────────────────── */
 #bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
 .page{position:relative;z-index:1}
 
@@ -77,11 +65,9 @@ p{margin:0}
 .skip{position:absolute;left:-9999px}
 .skip:focus{left:1rem;top:1rem;z-index:9500;background:var(--accent);color:#08080a;padding:.6rem 1rem;border-radius:6px;font:500 13px var(--mono)}
 
-/* ── scroll progress ────────────────────────────────────── */
 .progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:800;background:rgba(255,255,255,.04);pointer-events:none}
 .progress span{display:block;height:100%;width:0;background:var(--accent);box-shadow:0 0 14px rgba(217,255,87,.55)}
 
-/* ── header ─────────────────────────────────────────────── */
 .site-header{
   position:fixed;top:0;left:0;right:0;z-index:500;
   border-bottom:1px solid transparent;
@@ -119,7 +105,6 @@ p{margin:0}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(217,255,87,.5)}70%{box-shadow:0 0 0 7px rgba(217,255,87,0)}100%{box-shadow:0 0 0 0 rgba(217,255,87,0)}}
 @media (max-width:760px){.nav-links a:not(.nav-cta){display:none}.nav-links{gap:0}}
 
-/* the bar tightens up once you scroll — desktop, tablet and phone */
 .site-header.is-scrolled .nav{--nav-h:52px}
 .site-header.is-scrolled .brand{font-size:12.5px}
 .site-header.is-scrolled .brand .mark,
@@ -135,11 +120,9 @@ p{margin:0}
   .site-header.is-scrolled .brand .mark svg{width:19px;height:19px}
 }
 
-/* anchored sections must clear the fixed bar */
 section[id]{scroll-margin-top:88px}
 @media (max-width:760px){section[id]{scroll-margin-top:76px}}
 
-/* ── hero ───────────────────────────────────────────────── */
 .hero{position:relative;overflow:hidden;padding:clamp(52px,8vw,92px) 0 clamp(50px,7vw,80px)}
 .hero::after{
   content:"";position:absolute;pointer-events:none;top:-24%;right:-8%;
@@ -178,7 +161,6 @@ h1 em{font-style:italic;color:var(--accent)}
 .btn-ghost:hover{border-color:#3a3a46;background:#101014}
 .btn-ghost:hover .ico{color:var(--accent)}
 
-/* ── profile card (3d tilt) ─────────────────────────────── */
 .card{
   position:relative;border:1px solid var(--line-2);border-radius:18px;padding:22px;
   background:linear-gradient(170deg,rgba(22,22,28,.92),rgba(10,10,13,.94));
@@ -220,7 +202,6 @@ h1 em{font-style:italic;color:var(--accent)}
 .card-cta:hover{background:rgba(217,255,87,.1);border-color:rgba(217,255,87,.45)}
 .card-cta .ico{width:14px;height:14px;color:var(--accent)}
 
-/* ── stat strip ─────────────────────────────────────────── */
 .stats{border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:grid;grid-template-columns:repeat(2,1fr);backdrop-filter:blur(3px)}
 @media (min-width:760px){.stats{grid-template-columns:repeat(4,1fr)}}
 .stats .cell{padding:clamp(20px,3vw,28px) clamp(14px,2vw,22px);border-right:1px solid var(--line)}
@@ -233,14 +214,12 @@ h1 em{font-style:italic;color:var(--accent)}
 .stats .n em{font-style:italic;color:var(--accent)}
 .stats .k{margin-top:8px;font:500 10px/1.3 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--dim)}
 
-/* ── sections ───────────────────────────────────────────── */
 .section{padding-block:clamp(64px,9vw,112px);border-top:1px solid var(--line)}
 .section:first-of-type{border-top:0}
 .head{display:flex;flex-direction:column;gap:16px;margin-bottom:clamp(30px,4.5vw,52px)}
 .eyebrow .idx{color:var(--accent);letter-spacing:.1em}
 .h2{font-family:var(--serif);font-size:clamp(1.95rem,3.9vw,3.1rem);line-height:1.06;letter-spacing:-.018em;max-width:24ch;text-wrap:balance}
 
-/* numbered rows */
 .rows{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
 .rows li{
   display:grid;grid-template-columns:52px minmax(0,1fr);gap:clamp(12px,3vw,40px);
@@ -259,7 +238,6 @@ h1 em{font-style:italic;color:var(--accent)}
 .tags{font:400 11.5px/1.95 var(--mono);color:var(--dim);margin-top:12px}
 @media (min-width:860px){.tags{margin-top:0;text-align:right;padding-top:2px}}
 
-/* ── work ───────────────────────────────────────────────── */
 .projects{display:grid;grid-template-columns:1fr;gap:clamp(18px,2.4vw,26px)}
 @media (min-width:760px){.projects{grid-template-columns:repeat(2,1fr)}}
 .pj{display:block;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--tile);transition:border-color .3s,transform .3s cubic-bezier(.2,.7,.2,1)}
@@ -281,7 +259,6 @@ h1 em{font-style:italic;color:var(--accent)}
 .work-empty p{color:var(--muted);font-size:clamp(.98rem,1.1vw,1.05rem);line-height:1.68;text-wrap:pretty}
 .work-empty .btn{margin-top:clamp(20px,2.6vw,26px)}
 
-/* ── stack ──────────────────────────────────────────────── */
 .stack-group + .stack-group{margin-top:clamp(30px,4vw,44px)}
 .stack-label{display:flex;align-items:center;gap:12px;margin-bottom:14px;font:500 10.5px/1 var(--mono);letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
 .stack-label::after{content:"";flex:1;height:1px;background:var(--line)}
@@ -303,7 +280,6 @@ h1 em{font-style:italic;color:var(--accent)}
 .tile:hover .ico{transform:translateZ(18px) scale(1.06);color:var(--accent);opacity:1}
 .tile span{font:400 11.5px/1 var(--mono);text-align:center}
 
-/* ── contact ────────────────────────────────────────────── */
 .contact{position:relative;overflow:hidden}
 .contact::after{
   content:"";position:absolute;left:50%;bottom:-45%;width:min(900px,110vw);aspect-ratio:2/1;
@@ -320,14 +296,12 @@ h1 em{font-style:italic;color:var(--accent)}
 .contact-meta span b{color:var(--muted);font-weight:400}
 .contact-meta .live-time{color:var(--text)}
 
-/* ── footer ─────────────────────────────────────────────── */
 footer{border-top:1px solid var(--line);padding-block:26px;position:relative;z-index:1}
 .foot{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;font:400 11.5px/1.7 var(--mono);color:var(--dim)}
 .foot a{color:var(--muted);transition:color .2s}
 .foot a:hover{color:var(--text)}
 .foot .right{display:flex;gap:20px;flex-wrap:wrap}
 
-/* ── reveal ─────────────────────────────────────────────── */
 .js [data-reveal]{opacity:0;transform:translateY(16px)}
 .js [data-reveal].in{
   opacity:1;transform:none;
@@ -338,7 +312,7 @@ footer{border-top:1px solid var(--line);padding-block:26px;position:relative;z-i
   .js [data-reveal]{opacity:1;transform:none}
   *{animation:none!important;transition-duration:.001ms!important}
 }
-/* ── music player ──────────────────────────────────────── */
+
 .player{
   position:fixed;left:20px;bottom:20px;z-index:600;width:290px;padding:12px;
   border:1px solid var(--line-2);border-radius:16px;
@@ -419,7 +393,6 @@ footer{padding-bottom:150px}
 
 <main id="main">
 
-  <!-- ── hero ─────────────────────────────────────────────── -->
   <section class="hero" id="top">
     <div class="wrap">
       <div class="hero-grid">
@@ -429,7 +402,7 @@ footer{padding-bottom:150px}
           <p class="hero-lead">
             I build inside Discord's ecosystem — slash commands, sharded gateways, tickets,
             subscriptions — and the web layer around it: dashboards, docs and landing pages.
-            <strong>TypeScript and Node first</strong>, Python where it makes sense,
+            <strong>JavaScript and Node first</strong>, Python where it makes sense,
             and an unreasonable amount of care for rate limits and edge cases.
           </p>
           <div class="cta-row">
@@ -478,13 +451,12 @@ footer{padding-bottom:150px}
   <div class="wrap">
     <div class="stats" data-reveal>
       <div class="cell"><div class="n">0</div><div class="k">Projects shipped</div></div>
-      <div class="cell"><div class="n">TS</div><div class="k">Main language</div></div>
+      <div class="cell"><div class="n">JS</div><div class="k">Main language</div></div>
       <div class="cell"><div class="n">CST</div><div class="k">My timezone</div></div>
       <div class="cell"><div class="n">Open</div><div class="k">For work</div></div>
     </div>
   </div>
 
-  <!-- ── services ─────────────────────────────────────────── -->
   <section class="section" id="services">
     <div class="wrap">
       <div class="head" data-reveal>
@@ -509,7 +481,7 @@ footer{padding-bottom:150px}
             <p>The part users actually see: OAuth2 login, guild settings panels, analytics, docs and marketing pages.
                Hand-tuned CSS, real accessibility, and a first paint you don't have to apologise for.</p>
           </div>
-          <div class="tags">React · Next.js<br>Tailwind · TypeScript<br>HTML · CSS · JavaScript</div>
+          <div class="tags">React · Next.js<br>Tailwind · Node.js<br>HTML · CSS · JavaScript</div>
         </li>
         <li data-reveal>
           <span class="idx">03</span>
@@ -524,7 +496,6 @@ footer{padding-bottom:150px}
     </div>
   </section>
 
-  <!-- ── work ─────────────────────────────────────────────── -->
   <section class="section" id="work">
     <div class="wrap">
       <div class="head" data-reveal>
@@ -545,7 +516,6 @@ footer{padding-bottom:150px}
     </div>
   </section>
 
-  <!-- ── stack ────────────────────────────────────────────── -->
   <section class="section" id="stack">
     <div class="wrap">
       <div class="head" data-reveal>
@@ -561,10 +531,13 @@ footer{padding-bottom:150px}
             <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M11.998,24c-0.321,0-0.641-0.084-0.922-0.247l-2.936-1.737c-0.438-0.245-0.224-0.332-0.08-0.383 c0.585-0.203,0.703-0.25,1.328-0.604c0.065-0.037,0.151-0.023,0.218,0.017l2.256,1.339c0.082,0.045,0.197,0.045,0.272,0l8.795-5.076 c0.082-0.047,0.134-0.141,0.134-0.238V6.921c0-0.099-0.053-0.192-0.137-0.242l-8.791-5.072c-0.081-0.047-0.189-0.047-0.271,0 L3.075,6.68C2.99,6.729,2.936,6.825,2.936,6.921v10.15c0,0.097,0.054,0.189,0.139,0.235l2.409,1.392 c1.307,0.654,2.108-0.116,2.108-0.89V7.787c0-0.142,0.114-0.253,0.256-0.253h1.115c0.139,0,0.255,0.112,0.255,0.253v10.021 c0,1.745-0.95,2.745-2.604,2.745c-0.508,0-0.909,0-2.026-0.551L2.28,18.675c-0.57-0.329-0.922-0.945-0.922-1.604V6.921 c0-0.659,0.353-1.275,0.922-1.603l8.795-5.082c0.557-0.315,1.296-0.315,1.848,0l8.794,5.082c0.57,0.329,0.924,0.944,0.924,1.603 v10.15c0,0.659-0.354,1.273-0.924,1.604l-8.794,5.078C12.643,23.916,12.324,24,11.998,24z M19.099,13.993 c0-1.9-1.284-2.406-3.987-2.763c-2.731-0.361-3.009-0.548-3.009-1.187c0-0.528,0.235-1.233,2.258-1.233 c1.807,0,2.473,0.389,2.747,1.607c0.024,0.115,0.129,0.199,0.247,0.199h1.141c0.071,0,0.138-0.031,0.186-0.081 c0.048-0.054,0.074-0.123,0.067-0.196c-0.177-2.098-1.571-3.076-4.388-3.076c-2.508,0-4.004,1.058-4.004,2.833 c0,1.925,1.488,2.457,3.895,2.695c2.88,0.282,3.103,0.703,3.103,1.269c0,0.983-0.789,1.402-2.642,1.402 c-2.327,0-2.839-0.584-3.011-1.742c-0.02-0.124-0.126-0.215-0.253-0.215h-1.137c-0.141,0-0.254,0.112-0.254,0.253 c0,1.482,0.806,3.248,4.655,3.248C17.501,17.007,19.099,15.91,19.099,13.993z"/></svg>
             <span>Node.js</span>
           </div>
-
-          <div class="tile" title="TypeScript" data-tilt="8">
-            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M1.125 0C.502 0 0 .502 0 1.125v21.75C0 23.498.502 24 1.125 24h21.75c.623 0 1.125-.502 1.125-1.125V1.125C24 .502 23.498 0 22.875 0zm17.363 9.75c.612 0 1.154.037 1.627.111a6.38 6.38 0 0 1 1.306.34v2.458a3.95 3.95 0 0 0-.643-.361 5.093 5.093 0 0 0-.717-.26 5.453 5.453 0 0 0-1.426-.2c-.3 0-.573.028-.819.086a2.1 2.1 0 0 0-.623.242c-.17.104-.3.229-.393.374a.888.888 0 0 0-.14.49c0 .196.053.373.156.529.104.156.252.304.443.444s.423.276.696.41c.273.135.582.274.926.416.47.197.892.407 1.266.628.374.222.695.473.963.753.268.279.472.598.614.957.142.359.214.776.214 1.253 0 .657-.125 1.21-.373 1.656a3.033 3.033 0 0 1-1.012 1.085 4.38 4.38 0 0 1-1.487.596c-.566.12-1.163.18-1.79.18a9.916 9.916 0 0 1-1.84-.164 5.544 5.544 0 0 1-1.512-.493v-2.63a5.033 5.033 0 0 0 3.237 1.2c.333 0 .624-.03.872-.09.249-.06.456-.144.623-.25.166-.108.29-.234.373-.38a1.023 1.023 0 0 0-.074-1.089 2.12 2.12 0 0 0-.537-.5 5.597 5.597 0 0 0-.807-.444 27.72 27.72 0 0 0-1.007-.436c-.918-.383-1.602-.852-2.053-1.405-.45-.553-.676-1.222-.676-2.005 0-.614.123-1.141.369-1.582.246-.441.58-.804 1.004-1.089a4.494 4.494 0 0 1 1.47-.629 7.536 7.536 0 0 1 1.77-.201zm-15.113.188h9.563v2.166H9.506v9.646H6.789v-9.646H3.375z"/></svg>
-            <span>TypeScript</span>
+          <div class="tile" title="JavaScript" data-tilt="8">
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="4" fill="currentColor"/>
+              <text x="12" y="16.4" font-family="'JetBrains Mono',monospace" font-size="9" font-weight="500"
+                    fill="var(--tile)" text-anchor="middle" letter-spacing="-.6">JS</text>
+            </svg>
+            <span>JavaScript</span>
           </div>
 
           <div class="tile" title="Python" data-tilt="8">
@@ -609,21 +582,12 @@ footer{padding-bottom:150px}
             <span>Next.js</span>
           </div>
 
-          <div class="tile" title="Tailwind CSS" data-tilt="8">
+          <div class="tile span-2" title="Tailwind CSS" data-tilt="8">
             <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
               <path fill="currentColor" d="M3.2 10.6c1-2.6 2.6-3.9 4.7-3.9 2.7 0 3.9 2 5.1 3.7 1 1.4 1.9 2.1 3.3 2.1 1.5 0 2.6-.9 3.3-2.3l1.9.9c-1 2.6-2.7 3.9-5.3 3.9-2.7 0-4-2-5.2-3.7-.9-1.3-1.8-2.1-3-2.1-1.2 0-2 .8-2.8 2.3z"/>
               <path fill="currentColor" opacity=".55" d="M3.2 15.9c1-2.6 2.6-3.9 4.7-3.9 2.7 0 3.9 2 5.1 3.7 1 1.4 1.9 2.1 3.3 2.1 1.5 0 2.6-.9 3.3-2.3l1.9.9c-1 2.6-2.7 3.9-5.3 3.9-2.7 0-4-2-5.2-3.7-.9-1.3-1.8-2.1-3-2.1-1.2 0-2 .8-2.8 2.3z"/>
             </svg>
             <span>Tailwind</span>
-          </div>
-
-          <div class="tile" title="JavaScript" data-tilt="8">
-            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-              <rect x="3" y="3" width="18" height="18" rx="4" fill="currentColor"/>
-              <text x="12" y="16.4" font-family="'JetBrains Mono',monospace" font-size="9" font-weight="500"
-                    fill="var(--tile)" text-anchor="middle" letter-spacing="-.6">JS</text>
-            </svg>
-            <span>JavaScript</span>
           </div>
 
           <div class="tile" title="Vercel" data-tilt="8">
@@ -715,7 +679,6 @@ footer{padding-bottom:150px}
     </div>
   </section>
 
-  <!-- ── contact ──────────────────────────────────────────── -->
   <section class="section contact" id="contact">
     <div class="wrap">
       <div class="head" data-reveal>
@@ -756,7 +719,6 @@ footer{padding-bottom:150px}
 </footer>
 </div>
 
-<!-- ── music player ──────────────────────────────────────── -->
 <div class="player" id="player" data-audio="idle">
   <audio id="plAudio" src="audio/moon-128-ytshorts.savetube.me.mp3" preload="metadata" loop></audio>
   <div class="pl-top">
@@ -784,17 +746,12 @@ footer{padding-bottom:150px}
   </div>
 </div>
 
-
 <script>
 document.documentElement.classList.add('js');
 
-/* ---------------------------------------------------------------
-   Your timezone. CST/CDT comes from the browser automatically.
-   --------------------------------------------------------------- */
 const TIMEZONE = 'America/Chicago';
 const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/* ── header + scroll progress ───────────────────────────── */
 (function () {
   const header = document.getElementById('siteHeader');
   const bar = document.getElementById('progressBar');
@@ -817,7 +774,6 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   window.addEventListener('resize', onScroll, { passive: true });
 })();
 
-/* ── reveal on scroll ───────────────────────────────────── */
 (function () {
   const items = document.querySelectorAll('[data-reveal]');
   if (!('IntersectionObserver' in window) || REDUCE) {
@@ -838,7 +794,6 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
 })();
 
-/* ── active nav link ────────────────────────────────────── */
 (function () {
   const links = [...document.querySelectorAll('.nav-links a[href^="#"]')];
   const sections = links.map((a) => document.querySelector(a.getAttribute('href'))).filter(Boolean);
@@ -855,7 +810,6 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   sections.forEach((s) => spy.observe(s));
 })();
 
-/* ── live local clock (US Central) ──────────────────────── */
 (function () {
   const clocks = document.querySelectorAll('[data-clock]');
   const zones = document.querySelectorAll('[data-tz]');
@@ -877,17 +831,14 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   setInterval(tick, 10000);
 })();
 
-/* ── projects ───────────────────────────────────────────── */
 (function () {
-  /* Drop a screenshot in project/ and add an entry here. `shot` and `href` are optional. */
+
   const PROJECTS = [
     {
       name: "Bart's UncopyLocked Management",
       desc: 'Staff management bot — promote, demote, and strikes with expiry, strike history and more.',
       shot: 'project/staff-management.png',
     },
-    // { name: 'Project name', desc: 'One line on what it does.',
-    //   shot: 'project/shot.png', href: 'https://example.com' },
   ];
 
   const grid = document.getElementById('projects');
@@ -898,7 +849,6 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (empty) empty.remove();
   if (title) title.textContent = PROJECTS.length === 1 ? 'One project.' : 'Selected work.';
 
-  /* full-screen view of a screenshot */
   let lb, lbImg, lbHint;
 
   function closeZoom() {
@@ -982,7 +932,6 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
 })();
 
-/* ── 3d tilt on cards ───────────────────────────────────── */
 (function () {
   if (REDUCE || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
@@ -1005,7 +954,6 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
 })();
 
-/* ── 3d background: drifting cubes + depth points ───────── */
 (function () {
   const cv = document.getElementById('bg');
   if (!cv) return;
@@ -1146,7 +1094,7 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   resize();
   seed();
-  frame(performance.now());          /* paint once immediately, no blank flash */
+  frame(performance.now());          
   if (!REDUCE) raf = requestAnimationFrame(frame);
 
   window.addEventListener('resize', () => {
@@ -1170,11 +1118,6 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
 })();
 
-/* ── music player ──────────────────────────────────────────
-   Plays audio/moon-128-ytshorts.savetube.me.mp3 with a real
-   seek bar, duration and volume. Change the <audio src> in the
-   markup or the title above to swap the track.
-   -------------------------------------------------------- */
 (function () {
   const P = document.getElementById('player');
   const audio = document.getElementById('plAudio');
@@ -1267,7 +1210,6 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   paint(seekEl);
   labels();
 
-  /* first interaction anywhere starts it — autoplay rules forbid doing it sooner */
   function arm(e) {
     if (e.target && e.target.closest && e.target.closest('#player')) return;
     window.removeEventListener('pointerdown', arm);
