@@ -872,6 +872,11 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 (function () {
   /* Drop a screenshot in project/ and add an entry here. `shot` and `href` are optional. */
   const PROJECTS = [
+    {
+      name: "Bart's UncopyLocked Management",
+      desc: 'Staff management bot — promote, demote, and strikes with expiry, strike history and more.',
+      shot: 'project/staff-management.png',
+    },
     // { name: 'Project name', desc: 'One line on what it does.',
     //   shot: 'project/shot.png', href: 'https://example.com' },
   ];
@@ -899,6 +904,7 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       img.alt = p.name + ' — screenshot';
       img.loading = 'lazy';
       img.decoding = 'async';
+      img.addEventListener('error', () => img.remove());
       card.append(img);
     }
 
