@@ -1,0 +1,5 @@
+.serve.pid
+.serve.log
+.freebuff/
+.DS_Store
+Thumbs.db
