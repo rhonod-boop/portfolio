@@ -240,7 +240,7 @@ h1 em{font-style:italic;color:var(--accent)}
 
 .projects{display:grid;grid-template-columns:1fr;gap:clamp(18px,2.4vw,26px)}
 @media (min-width:760px){.projects{grid-template-columns:repeat(2,1fr)}}
-.pj{display:block;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--tile);transition:border-color .3s,transform .3s cubic-bezier(.2,.7,.2,1)}
+.pj{display:block;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--tile);transition:border-color .3s,transform .3s cubic-bezier(.2,.7,.2,1);will-change:transform}
 .pj:hover{border-color:var(--line-2);transform:translateY(-3px)}
 .pj img{display:block;width:100%;height:auto;max-height:520px;object-fit:contain;border-bottom:1px solid var(--line);background:#0c0c10;cursor:zoom-in}
 .pj img:focus-visible{outline:2px solid rgba(217,255,87,.55);outline-offset:-3px}
@@ -450,7 +450,7 @@ footer{padding-bottom:150px}
 
   <div class="wrap">
     <div class="stats" data-reveal>
-      <div class="cell"><div class="n">0</div><div class="k">Projects shipped</div></div>
+      <div class="cell"><div class="n" id="projectCount">1</div><div class="k">Projects shipped</div></div>
       <div class="cell"><div class="n">JS</div><div class="k">Main language</div></div>
       <div class="cell"><div class="n">CST</div><div class="k">My timezone</div></div>
       <div class="cell"><div class="n">Open</div><div class="k">For work</div></div>
@@ -848,6 +848,8 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (empty) empty.remove();
   if (title) title.textContent = PROJECTS.length === 1 ? 'One project.' : 'Selected work.';
+  const count = document.getElementById('projectCount');
+  if (count) count.textContent = String(PROJECTS.length);
 
   let lb, lbImg, lbHint;
 
@@ -888,6 +890,7 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   PROJECTS.forEach((p) => {
     const card = document.createElement(p.href ? 'a' : 'article');
     card.className = 'pj';
+    card.dataset.tilt = '9';
     if (p.href) {
       card.href = p.href;
       card.target = '_blank';
