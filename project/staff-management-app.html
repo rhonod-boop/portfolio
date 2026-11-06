@@ -1,0 +1,1021 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>#applications — staff console (demo)</title>
+<meta name="description" content="Mock staff console for Bart's UncopyLocked — Discord applications, roster, strikes with expiry and shift log. Demo data, nothing is saved.">
+<meta name="theme-color" content="#08080a">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2308080a'/%3E%3Cpath d='M16 4 27 10.5 16 17 5 10.5Z' fill='%23d9ff57'/%3E%3Cpath d='M5 10.5 16 17v11.5L5 22Z' fill='%23f1f1f3' fill-opacity='.92'/%3E%3Cpath d='M16 17 27 10.5V22L16 28.5Z' fill='%23f1f1f3' fill-opacity='.42'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#08080a;
+  --panel:#0b0b0e;
+  --panel-2:#0e0e12;
+  --panel-3:#101016;
+  --line:#191920;
+  --line-2:#26262f;
+  --text:#f1f1f3;
+  --muted:#8d8d99;
+  --dim:#5c5c68;
+  --accent:#d9ff57;
+  --bad:#ff7a7a;
+  --warn:#f0c46c;
+  --info:#9db4ff;
+  --serif:'Instrument Serif',Georgia,'Times New Roman',serif;
+  --sans:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font:400 14px/1.6 var(--sans);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:9000;pointer-events:none;opacity:.022;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+h1,h2,h3,p{margin:0;font-weight:400}
+b{font-weight:500}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+input,select{font:inherit;color:inherit;background:none;border:0}
+::selection{background:var(--accent);color:#08080a}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.skip{position:absolute;left:-9999px}
+.skip:focus{left:1rem;top:1rem;z-index:9500;background:var(--accent);color:#08080a;padding:.6rem 1rem;border-radius:6px;font:500 12px var(--mono)}
+
+.shell{display:grid;grid-template-columns:254px minmax(0,1fr);min-height:100vh}
+.mono{font-family:var(--mono)}
+.dim{color:var(--dim)}
+.micro{font:500 9.5px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+
+.rail{
+  position:sticky;top:0;height:100vh;overflow:auto;
+  display:flex;flex-direction:column;
+  background:#0a0a0d;border-right:1px solid var(--line);
+  padding:16px 12px 14px;
+}
+.guild{display:flex;align-items:center;gap:11px;padding:6px 8px 18px}
+.guild-mark{
+  width:38px;height:38px;flex:0 0 38px;border-radius:11px;display:grid;place-items:center;
+  background:linear-gradient(150deg,#1a2a05,#0e1207 60%);border:1px solid rgba(217,255,87,.24);
+  font:500 12px/1 var(--mono);color:var(--accent);letter-spacing:.04em;
+}
+.guild-name{font:500 13px/1.3 var(--sans);letter-spacing:-.01em}
+.guild-sub{font:400 10px/1.5 var(--mono);color:var(--dim);margin-top:2px}
+.rail-label{font:500 9px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--dim);padding:14px 10px 8px}
+.chans{display:flex;flex-direction:column;gap:2px}
+.chan{
+  display:flex;align-items:center;gap:8px;width:100%;text-align:left;
+  padding:7px 10px;border-radius:7px;color:var(--muted);
+  font:400 13px/1.3 var(--sans);position:relative;
+  transition:background .18s,color .18s;
+}
+.chan:hover{background:#101016;color:var(--text)}
+.chan .hash{font:400 13px var(--mono);color:var(--dim);transition:color .18s}
+.chan[aria-current="true"]{background:#12121a;color:var(--text)}
+.chan[aria-current="true"] .hash{color:var(--accent)}
+.chan[aria-current="true"]::before{
+  content:"";position:absolute;left:-12px;top:50%;width:2px;height:16px;margin-top:-8px;
+  background:var(--accent);border-radius:0 2px 2px 0;
+}
+.chan .count{
+  margin-left:auto;font:500 10px/1 var(--mono);color:var(--dim);
+  background:#17171f;border-radius:5px;padding:3px 5px;min-width:19px;text-align:center;
+}
+.chan .count.hot{background:rgba(217,255,87,.13);color:var(--accent)}
+.rail-foot{margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px 8px 0;border-top:1px solid var(--line)}
+.me{display:flex;align-items:center;gap:9px;min-width:0}
+.me b{display:block;font:500 12px/1.3 var(--sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.me em{display:block;font:400 10px/1.4 var(--mono);color:var(--dim);font-style:normal}
+.led{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 rgba(217,255,87,.5);animation:pulse 2.8s infinite;margin-left:auto;flex:0 0 auto}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(217,255,87,.45)}70%{box-shadow:0 0 0 6px rgba(217,255,87,0)}100%{box-shadow:0 0 0 0 rgba(217,255,87,0)}}
+
+.av{
+  width:36px;height:36px;flex:0 0 36px;border-radius:50%;
+  display:grid;place-items:center;background:#15151c;
+  font:500 11px/1 var(--mono);color:var(--muted);letter-spacing:.02em;
+  border:1px solid var(--line-2);
+}
+.av.sm{width:28px;height:28px;flex:0 0 28px;font-size:9.5px}
+.av[data-ring="lime"]{color:var(--accent);border-color:rgba(217,255,87,.34);background:rgba(217,255,87,.06)}
+.av[data-ring="blue"]{color:#c2cdff;border-color:rgba(157,180,255,.3);background:rgba(157,180,255,.06)}
+
+main{min-width:0;display:flex;flex-direction:column}
+.topbar{
+  position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px;
+  height:58px;padding:0 clamp(14px,3vw,30px);
+  background:rgba(8,8,10,.82);backdrop-filter:blur(14px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+  border-bottom:1px solid var(--line);
+}
+.chan-title{display:flex;align-items:center;gap:8px;min-width:0}
+.chan-title .hash{font:400 18px/1 var(--mono);color:var(--accent)}
+.chan-title h1{
+  font-family:var(--serif);font-style:italic;font-size:1.28rem;letter-spacing:.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.clock{font:400 11px/1 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.pill{
+  display:inline-flex;align-items:center;gap:7px;
+  font:500 9.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);border:1px solid var(--line-2);border-radius:999px;padding:6px 10px;white-space:nowrap;
+}
+.pill .led{margin:0;width:5px;height:5px}
+.pill.hot{color:var(--accent);border-color:rgba(217,255,87,.28);background:rgba(217,255,87,.05)}
+.menu{display:none;width:34px;height:34px;border:1px solid var(--line-2);border-radius:7px;place-items:center;color:var(--muted)}
+.menu:hover{color:var(--text);border-color:#3a3a46}
+.menu svg{width:15px;height:15px;display:block}
+
+.view{padding:clamp(20px,3.4vw,36px) clamp(14px,3vw,30px) 20px;flex:1}
+.view[hidden]{display:none}
+.view-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:22px}
+.eyebrow{display:flex;align-items:center;gap:8px;font:500 9.5px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:9px}
+.lede{font-family:var(--serif);font-size:clamp(1.7rem,3vw,2.25rem);line-height:1.05;letter-spacing:-.01em}
+.lede em{font-style:italic;color:var(--accent)}
+.head-side{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hintline{font:400 10.5px/1.4 var(--mono);color:var(--dim)}
+
+.apps{display:grid;gap:14px}
+@media (min-width:1000px){.apps{grid-template-columns:1fr 1fr}}
+.applicant{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 16px 13px;
+  display:flex;flex-direction:column;gap:13px;
+  transition:border-color .22s,background .22s,transform .22s;
+}
+.applicant:hover{border-color:var(--line-2);background:#0c0c10}
+.ap-top{display:flex;align-items:center;gap:11px}
+.ap-id{min-width:0}
+.ap-name{font:500 13.5px/1.3 var(--sans);letter-spacing:-.005em}
+.ap-meta{font:400 10.5px/1.5 var(--mono);color:var(--dim);margin-top:2px}
+.ap-top .chip{margin-left:auto}
+.chip{
+  font:500 9px/1 var(--mono);letter-spacing:.11em;text-transform:uppercase;
+  padding:5px 7px;border-radius:5px;border:1px solid var(--line-2);color:var(--muted);white-space:nowrap;
+}
+.chip.warn{color:var(--warn);border-color:rgba(240,196,108,.3);background:rgba(240,196,108,.06)}
+.chip.ok{color:var(--accent);border-color:rgba(217,255,87,.3);background:rgba(217,255,87,.06)}
+.badge{
+  font:500 9.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;
+  padding:5px 8px;border-radius:6px;border:1px solid var(--line-2);color:var(--muted);white-space:nowrap;
+}
+.badge.owner{color:#08080a;background:var(--accent);border-color:transparent}
+.badge.admin{color:var(--accent);border-color:rgba(217,255,87,.32);background:rgba(217,255,87,.06)}
+.badge.smod{color:#c9d2ff;border-color:rgba(157,180,255,.3);background:rgba(157,180,255,.06)}
+.badge.trial{color:var(--dim);border-style:dashed}
+.ap-rank{display:flex;align-items:center;gap:9px}
+.quote{
+  font-family:var(--serif);font-style:italic;font-size:15.5px;line-height:1.5;color:#c7c7d0;
+  padding-left:12px;border-left:1px solid var(--line-2);
+}
+.ap-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:2px}
+.ap-hours{margin-left:auto;font:400 10.5px/1 var(--mono);color:var(--dim);white-space:nowrap}
+.btn{
+  font:500 10.5px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;
+  padding:9px 12px;border-radius:7px;border:1px solid var(--line-2);color:var(--text);
+  transition:background .2s,border-color .2s,color .2s,transform .2s;
+}
+.btn:hover{transform:translateY(-1px)}
+.btn.primary{background:var(--accent);color:#08080a;border-color:transparent}
+.btn.primary:hover{background:#e4ff85}
+.btn.ghost:hover{border-color:#3a3a46;background:#12121a}
+.btn.danger{color:var(--bad);border-color:rgba(255,122,122,.26)}
+.btn.danger:hover{background:rgba(255,122,122,.08);border-color:rgba(255,122,122,.45)}
+.btn.tiny{padding:6px 9px;font-size:9.5px}
+
+.empty{
+  grid-column:1/-1;border:1px dashed var(--line-2);border-radius:12px;padding:30px 22px;
+  background:#0a0a0d;text-align:center;
+}
+.empty .lede{font-size:1.5rem;margin-bottom:6px}
+.empty p{font:400 12px/1.6 var(--mono);color:var(--dim)}
+
+.tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px}
+.search{
+  display:flex;align-items:center;gap:8px;flex:1 1 220px;min-width:0;
+  border:1px solid var(--line);border-radius:8px;padding:8px 11px;background:var(--panel);
+}
+.search svg{width:13px;height:13px;flex:0 0 13px;color:var(--dim)}
+.search input{width:100%;font:400 12px/1.3 var(--mono);outline:none}
+.search input::placeholder{color:var(--dim)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{
+  font:400 10.5px/1 var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:999px;
+  padding:7px 11px;transition:color .2s,border-color .2s,background .2s;
+}
+.chips button:hover{color:var(--text);border-color:var(--line-2)}
+.chips button[aria-pressed="true"]{color:#08080a;background:var(--accent);border-color:transparent}
+
+.table{border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden}
+.row{
+  display:grid;grid-template-columns:1.7fr .95fr .85fr .55fr .85fr auto;
+  gap:12px;align-items:center;padding:11px 15px;border-top:1px solid var(--line);
+}
+.row.head{border-top:0;background:#0d0d11}
+.row.head span{font:500 9px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.row:not(.head){transition:background .18s}
+.row:not(.head):hover{background:var(--panel-3)}
+.who{display:flex;align-items:center;gap:9px;min-width:0}
+.who b{display:block;font:500 12.5px/1.3 var(--sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who em{display:block;font:400 10px/1.4 var(--mono);color:var(--dim);font-style:normal}
+.cell{font:400 10.5px/1.4 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.cell.warn{color:var(--warn)}
+.duty{
+  display:inline-flex;align-items:center;gap:6px;justify-self:start;
+  font:400 10px/1 var(--mono);color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:6px 9px;
+  transition:color .2s,border-color .2s,background .2s;
+}
+.duty i{width:5px;height:5px;border-radius:50%;background:currentColor}
+.duty:hover{color:var(--text);border-color:var(--line-2)}
+.duty.on{color:var(--accent);border-color:rgba(217,255,87,.26);background:rgba(217,255,87,.05)}
+
+.issue{
+  display:grid;grid-template-columns:1fr 1fr .9fr auto;gap:10px;align-items:end;
+  border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:14px;margin-bottom:18px;
+}
+.issue label{display:block;min-width:0}
+.issue label span{display:block;font:500 9px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:7px}
+.issue select,.issue input{
+  width:100%;border:1px solid var(--line-2);border-radius:7px;background:#0a0a0e;
+  padding:9px 10px;font:400 11.5px/1.3 var(--mono);outline:none;
+}
+.issue select:focus,.issue input:focus,.search:focus-within{border-color:rgba(217,255,87,.4)}
+.issue select{appearance:none;cursor:pointer}
+.issue .btn{height:34px}
+
+.ledger{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden}
+.srow{display:grid;grid-template-columns:28px minmax(0,1fr) auto auto auto;gap:12px;align-items:center;padding:12px 15px;border-top:1px solid var(--line)}
+.srow:first-child{border-top:0}
+.srow b{display:block;font:500 12.5px/1.3 var(--sans)}
+.srow em{display:block;font:400 11px/1.5 var(--sans);color:var(--muted);font-style:normal;margin-top:1px}
+.countdown{font:400 10.5px/1 var(--mono);color:var(--warn);font-variant-numeric:tabular-nums;white-space:nowrap}
+.countdown.dead{color:var(--dim);text-decoration:line-through}
+.byline{font:400 10px/1 var(--mono);color:var(--dim);white-space:nowrap}
+
+.loglist{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.ev{display:grid;grid-template-columns:104px minmax(0,1fr);gap:16px;align-items:baseline;padding:11px 2px;border-bottom:1px solid var(--line)}
+.ev time{font:400 10px/1.4 var(--mono);color:var(--dim);white-space:nowrap}
+.ev p{font:400 12.5px/1.5 var(--sans);color:#cfcfd8}
+.ev b{color:var(--text)}
+
+.dg{display:grid;gap:16px}
+@media (min-width:980px){.dg{grid-template-columns:1.2fr .8fr;align-items:start}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card > .micro{display:block;margin-bottom:12px}
+.msg{display:flex;gap:12px}
+.msg .ava{
+  width:40px;height:40px;flex:0 0 40px;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(155deg,#26350b,#0d1207 65%);border:1px solid rgba(217,255,87,.3);
+  font:500 11px/1 var(--mono);color:var(--accent);
+}
+.msg-body{min-width:0;flex:1}
+.msg-head{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.msg-head b{font:500 13px/1.3 var(--sans)}
+.bot{font:500 8.5px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;background:var(--accent);color:#08080a;padding:3px 4px;border-radius:3px}
+.stamp{font:400 9.5px/1 var(--mono);color:var(--dim)}
+.embed{
+  margin-top:8px;border-left:3px solid var(--accent);border-radius:0 6px 6px 0;
+  background:var(--panel-2);padding:13px 15px 12px;max-width:520px;
+}
+.embed h3{font:500 13.5px/1.4 var(--sans)}
+.embed .desc{font:400 12px/1.6 var(--sans);color:var(--muted);margin-top:5px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:11px 18px;margin-top:12px}
+.fields em{display:block;font:500 9px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--dim);font-style:normal;margin-bottom:4px}
+.fields b{font:400 11.5px/1.4 var(--mono);color:var(--text)}
+.embed footer{margin-top:12px;font:400 9.5px/1.4 var(--mono);color:var(--dim)}
+.cmds{display:flex;flex-wrap:wrap;gap:6px}
+.cmds code{
+  font:400 10.5px/1 var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:6px;
+  padding:7px 9px;background:#0a0a0e;
+}
+.cmds code b{color:var(--accent);font-weight:400}
+.note{font:400 11px/1.65 var(--sans);color:var(--dim);margin-top:12px}
+
+.foot{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;
+  padding:18px clamp(14px,3vw,30px) 26px;border-top:1px solid var(--line);margin-top:8px;
+  font:400 10.5px/1.5 var(--mono);color:var(--dim);
+}
+.foot a{color:var(--muted);transition:color .2s}
+.foot a:hover{color:var(--accent)}
+
+.toasts{position:fixed;right:16px;bottom:16px;z-index:80;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:none}
+.toast{
+  display:flex;align-items:center;gap:8px;max-width:min(330px,86vw);
+  background:#101017;border:1px solid var(--line-2);border-radius:9px;padding:10px 13px;
+  font:400 11.5px/1.4 var(--mono);color:var(--text);
+  opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s;
+  box-shadow:0 18px 40px -24px #000;
+}
+.toast.in{opacity:1;transform:none}
+.toast i{width:5px;height:5px;border-radius:50%;background:var(--accent);flex:0 0 5px}
+.toast.bad i{background:var(--bad)}
+.toast.warn i{background:var(--warn)}
+
+.scrim{position:fixed;inset:0;z-index:70;background:rgba(4,4,6,.6);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .28s}
+.scrim.show{opacity:1;pointer-events:auto}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .rail{position:fixed;left:0;top:0;bottom:0;width:264px;z-index:75;transform:translateX(-100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+  .rail.open{transform:none}
+  .menu{display:grid}
+  .top-right .pill{display:none}
+}
+@media (max-width:860px){
+  .row{grid-template-columns:1.5fr .95fr .5fr auto}
+  .c-joined,.c-last{display:none}
+  .issue{grid-template-columns:1fr 1fr}
+  .issue .btn{grid-column:1/-1}
+  .srow{grid-template-columns:28px minmax(0,1fr) auto}
+  .srow .byline,.srow .chip{display:none}
+}
+@media (max-width:560px){
+  .row{grid-template-columns:1.4fr .9fr auto;gap:9px;padding:11px 12px}
+  .row.head span:nth-child(4){display:none}
+  .row .cell.warn{display:none}
+  .issue{grid-template-columns:1fr}
+  .ev{grid-template-columns:1fr;gap:3px}
+  .ap-hours{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .toast{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to console</a>
+<div class="scrim" id="scrim"></div>
+
+<div class="shell">
+  <aside class="rail" id="rail" aria-label="Console navigation">
+    <div class="guild">
+      <span class="guild-mark">BU</span>
+      <div>
+        <p class="guild-name">Bart's UncopyLocked</p>
+        <p class="guild-sub">staff systems</p>
+      </div>
+    </div>
+
+    <p class="rail-label">console</p>
+    <nav class="chans" aria-label="Views">
+      <button class="chan" data-view="applications" aria-current="true"><span class="hash">#</span>applications<span class="count hot" id="appCount">4</span></button>
+      <button class="chan" data-view="roster" aria-current="false"><span class="hash">#</span>roster<span class="count" id="rosterCount">6</span></button>
+      <button class="chan" data-view="strikes" aria-current="false"><span class="hash">#</span>strikes<span class="count" id="strikeCount">3</span></button>
+      <button class="chan" data-view="shifts" aria-current="false"><span class="hash">#</span>shift-log</button>
+      <button class="chan" data-view="discord" aria-current="false"><span class="hash">#</span>bot-output</button>
+    </nav>
+
+    <p class="rail-label">staff room</p>
+    <div class="chans">
+      <div class="chan"><span class="av sm" data-ring="lime">AC</span>ace</div>
+      <div class="chan"><span class="av sm" data-ring="blue">MI</span>mira</div>
+    </div>
+
+    <div class="rail-foot">
+      <span class="av sm" data-ring="lime">AC</span>
+      <span class="me"><b>ace</b><em>owner · gateway</em></span>
+      <span class="led" aria-hidden="true"></span>
+    </div>
+  </aside>
+
+  <main id="main">
+    <header class="topbar">
+      <button class="menu" id="menu" aria-label="Open navigation" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <div class="chan-title"><span class="hash">#</span><h1 id="viewName">applications</h1></div>
+      <div class="top-right">
+        <span class="pill"><i class="led" aria-hidden="true"></i>gateway ok</span>
+        <span class="clock" id="clock">00:00:00</span>
+      </div>
+    </header>
+
+    <section class="view" data-panel="applications" aria-label="Applications">
+      <div class="view-head">
+        <div>
+          <p class="eyebrow"><span class="led" aria-hidden="true"></span>pending review</p>
+          <h2 class="lede">Staff <em>applications</em></h2>
+        </div>
+        <div class="head-side">
+          <span class="pill hot" id="queuePill">4 in queue</span>
+          <span class="hintline">demo data · nothing is saved</span>
+        </div>
+      </div>
+      <div class="apps" id="apps"></div>
+    </section>
+
+    <section class="view" data-panel="roster" hidden aria-label="Roster">
+      <div class="view-head">
+        <div>
+          <p class="eyebrow"><span class="led" aria-hidden="true"></span>team</p>
+          <h2 class="lede">The <em>roster</em></h2>
+        </div>
+        <div class="head-side">
+          <span class="pill" id="dutyPill">4 on duty</span>
+          <span class="hintline">ranks sync to Discord roles</span>
+        </div>
+      </div>
+      <div class="tools">
+        <label class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+          <input id="search" type="search" placeholder="filter by name or rank" aria-label="Filter roster" autocomplete="off">
+        </label>
+        <div class="chips" id="rankChips">
+          <button data-rank="all" aria-pressed="true">All</button>
+          <button data-rank="owner" aria-pressed="false">Owner</button>
+          <button data-rank="admin" aria-pressed="false">Admin</button>
+          <button data-rank="smod" aria-pressed="false">Senior Mod</button>
+          <button data-rank="mod" aria-pressed="false">Mod</button>
+          <button data-rank="trial" aria-pressed="false">Trial</button>
+        </div>
+      </div>
+      <div class="table" id="roster" role="table" aria-label="Staff roster">
+        <div class="row head" role="row">
+          <span class="c-who" role="columnheader">member</span>
+          <span class="c-rank" role="columnheader">rank</span>
+          <span class="c-joined" role="columnheader">joined</span>
+          <span class="c-str" role="columnheader">strikes</span>
+          <span class="c-last" role="columnheader">last seen</span>
+          <span class="c-duty" role="columnheader">shift</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" data-panel="strikes" hidden aria-label="Strikes">
+      <div class="view-head">
+        <div>
+          <p class="eyebrow"><span class="led" aria-hidden="true"></span>discipline</p>
+          <h2 class="lede">Strikes &amp; <em>expiry</em></h2>
+        </div>
+        <div class="head-side">
+          <span class="pill" id="activePill">2 active</span>
+          <span class="hintline">3 strikes · rank removed</span>
+        </div>
+      </div>
+
+      <form class="issue" id="issueForm">
+        <label>
+          <span>member</span>
+          <select id="sMember" aria-label="Strike member"></select>
+        </label>
+        <label>
+          <span>reason</span>
+          <input id="sReason" placeholder="what happened" required maxlength="72" aria-label="Strike reason">
+        </label>
+        <label>
+          <span>length</span>
+          <select id="sExp" aria-label="Strike length">
+            <option value="24">24 hours</option>
+            <option value="168" selected>7 days</option>
+            <option value="720">30 days</option>
+            <option value="8760">1 year</option>
+          </select>
+        </label>
+        <button class="btn primary" type="submit">Issue strike</button>
+      </form>
+
+      <div class="ledger" id="ledger"></div>
+    </section>
+
+    <section class="view" data-panel="shifts" hidden aria-label="Shift log">
+      <div class="view-head">
+        <div>
+          <p class="eyebrow"><span class="led" aria-hidden="true"></span>activity</p>
+          <h2 class="lede">Shift <em>log</em></h2>
+        </div>
+        <div class="head-side">
+          <span class="hintline">every action writes here</span>
+        </div>
+      </div>
+      <div class="loglist" id="loglist"></div>
+    </section>
+
+    <section class="view" data-panel="discord" hidden aria-label="Bot output">
+      <div class="view-head">
+        <div>
+          <p class="eyebrow"><span class="led" aria-hidden="true"></span>discord output</p>
+          <h2 class="lede">What the bot <em>posts</em></h2>
+        </div>
+        <div class="head-side">
+          <span class="hintline">updates as you approve or strike</span>
+        </div>
+      </div>
+      <div class="dg">
+        <div class="card">
+          <span class="micro">#audit-log</span>
+          <div class="msg">
+            <span class="ava">BU</span>
+            <div class="msg-body">
+              <div class="msg-head">
+                <b>UncopyLocked</b>
+                <span class="bot">bot</span>
+                <span class="stamp" id="embedStamp">today at 4:12 PM</span>
+              </div>
+              <div class="embed">
+                <h3 id="embedTitle">Application approved · @nyxed</h3>
+                <p class="desc" id="embedDesc">Trial period starts today. Rank assigned by <b>@ace</b>.</p>
+                <div class="fields" id="embedFields">
+                  <span><em>member</em><b>@nyxed</b></span>
+                  <span><em>rank</em><b>Senior Mod</b></span>
+                  <span><em>trial ends</em><b>in 14 days</b></span>
+                  <span><em>handled by</em><b>@ace</b></span>
+                </div>
+                <footer>staff systems · strike 0/3 · case #0412</footer>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <span class="micro">slash commands</span>
+          <div class="cmds">
+            <code><b>/</b>apply</code>
+            <code><b>/</b>promote</code>
+            <code><b>/</b>demote</code>
+            <code><b>/</b>strike</code>
+            <code><b>/</b>strikes</code>
+            <code><b>/</b>strike lift</code>
+            <code><b>/</b>shift start</code>
+            <code><b>/</b>shift end</code>
+            <code><b>/</b>roster</code>
+          </div>
+          <p class="note">Role changes, strike expiry and shift hours are written to the database first, then mirrored into Discord. Expired strikes clear themselves on a timer, so nobody has to remember.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <a href="../index.html">← back to portfolio</a>
+      <span>mock console · sample data · built by ace</span>
+    </footer>
+  </main>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var HOUR = 36e5;
+  var DAY = 24 * HOUR;
+  var short = window.matchMedia('(max-width: 900px)');
+
+  var state = {
+    members: [
+      { id: 'm1', name: 'ace', tag: '0001', rank: 'Owner', joined: '2024-02-11', strikes: 0, duty: true, last: 'now' },
+      { id: 'm2', name: 'mira', tag: '4421', rank: 'Admin', joined: '2024-03-04', strikes: 0, duty: true, last: '2m ago' },
+      { id: 'm3', name: 'kade', tag: '7710', rank: 'Senior Mod', joined: '2024-05-19', strikes: 1, duty: false, last: '3h ago' },
+      { id: 'm4', name: 'lux', tag: '2288', rank: 'Mod', joined: '2024-07-02', strikes: 0, duty: true, last: '12m ago' },
+      { id: 'm5', name: 'otto', tag: '9054', rank: 'Mod', joined: '2024-08-28', strikes: 2, duty: false, last: 'yesterday' },
+      { id: 'm6', name: 'jun', tag: '3312', rank: 'Trial Mod', joined: '2024-09-14', strikes: 0, duty: true, last: '5m ago' }
+    ],
+    apps: [
+      { id: 'a1', name: 'nyxed', rank: 'Senior Mod', age: 19, tz: 'GMT-5', hours: 30, ring: 'lime', status: 'pending',
+        at: Date.now() - 26 * 60000,
+        answer: 'I ran moderation for a 12k member server for a year and built the strike sheet they still use.' },
+      { id: 'a2', name: 'kaz', rank: 'Trial Mod', age: 17, tz: 'GMT+1', hours: 18, ring: 'blue', status: 'pending',
+        at: Date.now() - 3 * HOUR,
+        answer: 'Active every evening. I already know the ticket flow from hanging around the support channels.' },
+      { id: 'a3', name: 'vanta', rank: 'Admin', age: 21, tz: 'GMT-8', hours: 25, ring: 'lime', status: 'pending',
+        at: Date.now() - 9 * HOUR,
+        answer: 'Ran a staff team of eleven. I write the onboarding docs and take the escalations nobody wants.' },
+      { id: 'a4', name: 'rei', rank: 'Mod', age: 20, tz: 'GMT+3', hours: 22, ring: 'blue', status: 'pending',
+        at: Date.now() - 22 * HOUR,
+        answer: 'Mostly here for the late shift. Fast with logs and fair with appeals.' }
+    ],
+    strikes: [
+      { id: 's1', member: 'otto', reason: 'Deleted ticket history without logging it', by: 'mira', exp: Date.now() + 2 * DAY + 4 * HOUR },
+      { id: 's2', member: 'kade', reason: 'Missed two scheduled shifts', by: 'ace', exp: Date.now() + 6 * HOUR },
+      { id: 's3', member: 'otto', reason: 'Rank abuse in #staff-chat', by: 'ace', exp: Date.now() - 40 * 60000 }
+    ],
+    log: [
+      { at: Date.now() - 4 * 60000, text: '@jun clocks in for the 18:00 shift' },
+      { at: Date.now() - 52 * 60000, text: '@otto strike 2/3 issued by @ace' },
+      { at: Date.now() - 3 * HOUR, text: '@lux moved to senior review by @mira' },
+      { at: Date.now() - 7 * HOUR, text: '@kade strike 1/3 issued by @ace' },
+      { at: Date.now() - 26 * HOUR, text: 'application form opened · 4 new submissions' },
+      { at: Date.now() - 2 * DAY, text: '@jun accepted into Trial Mod by @ace' }
+    ]
+  };
+
+  function initials(name) {
+    return name.slice(0, 2).toUpperCase();
+  }
+
+  function rankKey(rank) {
+    if (rank === 'Senior Mod') return 'smod';
+    if (rank === 'Trial Mod') return 'trial';
+    return rank.toLowerCase();
+  }
+
+  function fmtDate(iso) {
+    var d = new Date(iso + 'T00:00:00');
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' });
+  }
+
+  function ago(ts) {
+    var s = Math.max(0, Math.round((Date.now() - ts) / 1000));
+    if (s < 45) return 'just now';
+    var m = Math.round(s / 60);
+    if (m < 60) return m + 'm ago';
+    var h = Math.round(m / 60);
+    if (h < 24) return h + 'h ago';
+    var d = Math.round(h / 24);
+    return d === 1 ? 'yesterday' : d + 'd ago';
+  }
+
+  function stampNow() {
+    return 'today at ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  }
+
+  function countdown(ms) {
+    if (ms <= 0) return 'expired';
+    var d = Math.floor(ms / DAY);
+    var h = Math.floor((ms % DAY) / HOUR);
+    var m = Math.floor((ms % HOUR) / 60000);
+    var out = d ? d + 'd ' : '';
+    out += String(h).padStart(2, '0') + 'h ' + String(m).padStart(2, '0') + 'm';
+    return out;
+  }
+
+  function toast(text, kind) {
+    var el = document.createElement('div');
+    el.className = 'toast' + (kind ? ' ' + kind : '');
+    var dot = document.createElement('i');
+    dot.setAttribute('aria-hidden', 'true');
+    var span = document.createElement('span');
+    span.textContent = text;
+    el.appendChild(dot);
+    el.appendChild(span);
+    $('#toasts').appendChild(el);
+    requestAnimationFrame(function () { el.classList.add('in'); });
+    setTimeout(function () {
+      el.classList.remove('in');
+      setTimeout(function () { el.remove(); }, 300);
+    }, 3200);
+  }
+
+  function addLog(text) {
+    state.log.unshift({ at: Date.now(), text: text });
+    if (state.log.length > 40) state.log.length = 40;
+    renderLog();
+  }
+
+  function renderApps() {
+    var box = $('#apps');
+    if (!state.apps.length) {
+      box.innerHTML = '<div class="empty"><p class="lede">Queue is clear.</p>' +
+        '<p>New submissions land here from the Discord form.</p></div>';
+    } else {
+      box.innerHTML = state.apps.map(function (a) {
+        var chip = a.status === 'interview'
+          ? '<span class="chip warn">interview</span>'
+          : '<span class="chip">pending</span>';
+        return '<article class="applicant" data-id="' + a.id + '">' +
+          '<div class="ap-top">' +
+            '<span class="av" data-ring="' + a.ring + '">' + initials(a.name) + '</span>' +
+            '<div class="ap-id">' +
+              '<p class="ap-name">@' + a.name + '</p>' +
+              '<p class="ap-meta">applied ' + ago(a.at) + ' · ' + a.age + ' y/o · ' + a.tz + '</p>' +
+            '</div>' + chip +
+          '</div>' +
+          '<p class="ap-rank"><span class="micro">applying for</span>' +
+            '<span class="badge ' + rankKey(a.rank) + '">' + a.rank + '</span></p>' +
+          '<p class="quote">' + a.answer + '</p>' +
+          '<div class="ap-actions">' +
+            '<button class="btn primary" data-act="approve">Approve</button>' +
+            '<button class="btn ghost" data-act="interview">Interview</button>' +
+            '<button class="btn danger" data-act="deny">Deny</button>' +
+            '<span class="ap-hours">' + a.hours + 'h / week</span>' +
+          '</div>' +
+        '</article>';
+      }).join('');
+    }
+    $('#appCount').textContent = String(state.apps.length);
+    $('#appCount').classList.toggle('hot', state.apps.length > 0);
+    $('#queuePill').textContent = state.apps.length + ' in queue';
+    renderMemberSelect();
+  }
+
+  function renderMemberSelect() {
+    var sel = $('#sMember');
+    var prev = sel.value;
+    sel.innerHTML = state.members.map(function (m) {
+      return '<option value="' + m.id + '">' + m.name + ' · ' + m.rank + '</option>';
+    }).join('');
+    if (prev) sel.value = prev;
+  }
+
+  var query = '';
+  var rankFilter = 'all';
+
+  function renderRoster() {
+    var rows = state.members.filter(function (m) {
+      var hitRank = rankFilter === 'all' || rankKey(m.rank) === rankFilter;
+      var hitText = (m.name + ' ' + m.rank).toLowerCase().indexOf(query) !== -1;
+      return hitRank && hitText;
+    });
+    var body = rows.map(function (m) {
+      return '<div class="row" role="row" data-id="' + m.id + '">' +
+        '<span class="who c-who" role="cell">' +
+          '<span class="av sm" data-ring="' + (m.duty ? 'lime' : 'blue') + '">' + initials(m.name) + '</span>' +
+          '<span><b>' + m.name + '</b><em>#' + m.tag + '</em></span>' +
+        '</span>' +
+        '<span class="c-rank" role="cell"><span class="badge ' + rankKey(m.rank) + '">' + m.rank + '</span></span>' +
+        '<span class="cell c-joined" role="cell">' + fmtDate(m.joined) + '</span>' +
+        '<span class="cell c-str' + (m.strikes ? ' warn' : '') + '" role="cell">' + m.strikes + '/3</span>' +
+        '<span class="cell c-last" role="cell">' + m.last + '</span>' +
+        '<span class="c-duty" role="cell"><button class="duty' + (m.duty ? ' on' : '') +
+          '" data-duty="' + m.id + '" aria-pressed="' + (m.duty ? 'true' : 'false') + '">' +
+          '<i aria-hidden="true"></i>' + (m.duty ? 'on duty' : 'off duty') + '</button></span>' +
+      '</div>';
+    }).join('');
+    if (!rows.length) {
+      body = '<div class="row"><span class="cell" style="grid-column:1/-1">No member matches that filter.</span></div>';
+    }
+    $('#roster').innerHTML = '<div class="row head" role="row">' +
+      '<span class="c-who" role="columnheader">member</span>' +
+      '<span class="c-rank" role="columnheader">rank</span>' +
+      '<span class="c-joined" role="columnheader">joined</span>' +
+      '<span class="c-str" role="columnheader">strikes</span>' +
+      '<span class="c-last" role="columnheader">last seen</span>' +
+      '<span class="c-duty" role="columnheader">shift</span>' +
+    '</div>' + body;
+    $('#rosterCount').textContent = String(state.members.length);
+    var on = state.members.filter(function (m) { return m.duty; }).length;
+    $('#dutyPill').textContent = on + ' on duty';
+  }
+
+  function renderStrikes() {
+    var list = state.strikes.slice().sort(function (a, b) { return b.exp - a.exp; });
+    $('#ledger').innerHTML = list.map(function (s) {
+      var m = state.members.filter(function (x) { return x.name === s.member; })[0];
+      var init = m ? initials(m.name) : initials(s.member);
+      return '<div class="srow" data-strike="' + s.id + '">' +
+        '<span class="av sm" data-ring="blue">' + init + '</span>' +
+        '<span><b>@' + s.member + '</b><em>' + s.reason + '</em></span>' +
+        '<span class="chip">strike ' + (m ? m.strikes : 1) + '/3</span>' +
+        '<span class="countdown" data-exp="' + s.exp + '">' + countdown(s.exp - Date.now()) + '</span>' +
+        '<span style="display:flex;gap:8px;align-items:center">' +
+          '<span class="byline">by @' + s.by + '</span>' +
+          '<button class="btn tiny" data-lift="' + s.id + '">Lift</button>' +
+        '</span>' +
+      '</div>';
+    }).join('');
+    if (!list.length) {
+      $('#ledger').innerHTML = '<div class="srow"><span></span><span><b>Clean sheet.</b>' +
+        '<em>No strikes on record.</em></span><span></span><span></span><span></span></div>';
+    }
+    var active = state.strikes.filter(function (s) { return s.exp > Date.now(); }).length;
+    $('#activePill').textContent = active + (active === 1 ? ' active' : ' active');
+    $('#strikeCount').textContent = String(active);
+    $('#strikeCount').classList.toggle('hot', active > 0);
+    tick();
+  }
+
+  function renderLog() {
+    $('#loglist').innerHTML = state.log.map(function (e) {
+      return '<div class="ev"><time>' + ago(e.at) + '</time><p>' + e.text + '</p></div>';
+    }).join('');
+  }
+
+  function setEmbed(title, desc, fields, caseNo) {
+    $('#embedTitle').textContent = title;
+    $('#embedDesc').innerHTML = desc;
+    $('#embedFields').innerHTML = fields.map(function (f) {
+      return '<span><em>' + f[0] + '</em><b>' + f[1] + '</b></span>';
+    }).join('');
+    $('#embedStamp').textContent = stampNow();
+    var foot = $('.embed footer');
+    if (foot) foot.textContent = 'staff systems · case #' + String(caseNo).padStart(4, '0');
+  }
+
+  function approve(app) {
+    state.apps = state.apps.filter(function (a) { return a.id !== app.id; });
+    var n = state.members.length + 1;
+    state.members.push({
+      id: 'm' + Date.now(),
+      name: app.name,
+      tag: String(1000 + Math.floor(Math.random() * 8999)),
+      rank: app.rank,
+      joined: new Date().toISOString().slice(0, 10),
+      strikes: 0,
+      duty: false,
+      last: 'never'
+    });
+    addLog('@' + app.name + ' promoted to ' + app.rank + ' by @ace');
+    setEmbed(
+      'Application approved · @' + app.name,
+      'Trial period starts today. Rank assigned by <b>@ace</b>.',
+      [['member', '@' + app.name], ['rank', app.rank], ['trial ends', 'in 14 days'], ['handled by', '@ace']],
+      n * 100 + 12
+    );
+    toast('@' + app.name + ' → ' + app.rank, 'ok');
+    renderApps();
+    renderRoster();
+    renderStrikes();
+  }
+
+  function interview(app) {
+    app.status = 'interview';
+    app.at = Date.now();
+    addLog('interview scheduled with @' + app.name + ' for ' + app.rank);
+    setEmbed(
+      'Interview scheduled · @' + app.name,
+      'Voice channel opened for <b>@' + app.name + '</b>. Calendar invite posts in #staff-chat.',
+      [['member', '@' + app.name], ['rank', app.rank], ['slot', 'next 48h'], ['handled by', '@ace']],
+      320 + state.apps.length
+    );
+    toast('interview queued for @' + app.name, 'warn');
+    renderApps();
+  }
+
+  function deny(app) {
+    state.apps = state.apps.filter(function (a) { return a.id !== app.id; });
+    addLog('@' + app.name + ' denied at ' + app.rank + ' · form closed');
+    setEmbed(
+      'Application closed · @' + app.name,
+      'Not a fit for ' + app.rank + ' this round. Re-apply opens in 30 days.',
+      [['member', '@' + app.name], ['rank', app.rank], ['status', 'denied'], ['handled by', '@ace']],
+      780 + state.apps.length
+    );
+    toast('@' + app.name + ' denied', 'bad');
+    renderApps();
+  }
+
+  $('#apps').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    var card = btn.closest('.applicant');
+    if (!card) return;
+    var app = state.apps.filter(function (a) { return a.id === card.dataset.id; })[0];
+    if (!app) return;
+    if (btn.dataset.act === 'approve') approve(app);
+    else if (btn.dataset.act === 'interview') interview(app);
+    else if (btn.dataset.act === 'deny') deny(app);
+  });
+
+  $('#search').addEventListener('input', function (e) {
+    query = e.target.value.trim().toLowerCase();
+    renderRoster();
+  });
+
+  $('#rankChips').addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-rank]');
+    if (!btn) return;
+    rankFilter = btn.dataset.rank;
+    $$('#rankChips button').forEach(function (b) {
+      b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+    });
+    renderRoster();
+  });
+
+  $('#roster').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-duty]');
+    if (!btn) return;
+    var m = state.members.filter(function (x) { return x.id === btn.dataset.duty; })[0];
+    if (!m) return;
+    m.duty = !m.duty;
+    m.last = m.duty ? 'now' : m.last;
+    addLog('@' + m.name + (m.duty ? ' clocks in' : ' clocks out'));
+    toast('@' + m.name + (m.duty ? ' on duty' : ' off duty'), m.duty ? 'ok' : '');
+    renderRoster();
+  });
+
+  $('#issueForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var sel = $('#sMember');
+    var m = state.members.filter(function (x) { return x.id === sel.value; })[0];
+    var reason = $('#sReason').value.trim();
+    if (!m || !reason) return;
+    var hours = Number($('#sExp').value) || 168;
+    m.strikes = Math.min(3, m.strikes + 1);
+    state.strikes.unshift({
+      id: 's' + Date.now(),
+      member: m.name,
+      reason: reason,
+      by: 'ace',
+      exp: Date.now() + hours * HOUR
+    });
+    addLog('@' + m.name + ' strike ' + m.strikes + '/3 issued by @ace · expires in ' + hours + 'h');
+    setEmbed(
+      'Strike issued · @' + m.name,
+      reason,
+      [['member', '@' + m.name], ['count', m.strikes + '/3'], ['expires', 'in ' + hours + 'h'], ['handled by', '@ace']],
+      500 + state.strikes.length
+    );
+    toast('strike ' + m.strikes + '/3 · @' + m.name, 'warn');
+    e.target.reset();
+    renderStrikes();
+    renderRoster();
+  });
+
+  $('#ledger').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-lift]');
+    if (!btn) return;
+    var id = btn.dataset.lift;
+    var s = state.strikes.filter(function (x) { return x.id === id; })[0];
+    if (!s) return;
+    state.strikes = state.strikes.filter(function (x) { return x.id !== id; });
+    var m = state.members.filter(function (x) { return x.name === s.member; })[0];
+    if (m) m.strikes = Math.max(0, m.strikes - 1);
+    addLog('strike lifted for @' + s.member + ' by @ace');
+    setEmbed(
+      'Strike lifted · @' + s.member,
+      'Record cleared by <b>@ace</b>. Strike history keeps the original case.',
+      [['member', '@' + s.member], ['count', (m ? m.strikes : 0) + '/3'], ['status', 'lifted'], ['handled by', '@ace']],
+      900 + state.strikes.length
+    );
+    toast('strike lifted · @' + s.member, 'ok');
+    renderStrikes();
+    renderRoster();
+  });
+
+  function tick() {
+    var now = Date.now();
+    $$('[data-exp]').forEach(function (el) {
+      var ms = Number(el.dataset.exp) - now;
+      el.textContent = countdown(ms);
+      el.classList.toggle('dead', ms <= 0);
+    });
+  }
+
+  var viewName = {
+    applications: 'applications',
+    roster: 'roster',
+    strikes: 'strikes',
+    shifts: 'shift-log',
+    discord: 'bot-output'
+  };
+
+  function closeRail() {
+    $('#rail').classList.remove('open');
+    $('#scrim').classList.remove('show');
+    $('#menu').setAttribute('aria-expanded', 'false');
+  }
+
+  function setView(name) {
+    $$('.chan[data-view]').forEach(function (b) {
+      b.setAttribute('aria-current', b.dataset.view === name ? 'true' : 'false');
+    });
+    $$('[data-panel]').forEach(function (p) {
+      if (p.dataset.panel === name) p.removeAttribute('hidden');
+      else p.setAttribute('hidden', '');
+    });
+    $('#viewName').textContent = viewName[name] || name;
+    document.title = '#' + (viewName[name] || name) + ' — staff console (demo)';
+    if (short.matches) closeRail();
+  }
+
+  $$('.chan[data-view]').forEach(function (b) {
+    b.addEventListener('click', function () { setView(b.dataset.view); });
+  });
+
+  $('#menu').addEventListener('click', function () {
+    var rail = $('#rail');
+    var open = !rail.classList.contains('open');
+    rail.classList.toggle('open', open);
+    $('#scrim').classList.toggle('show', open);
+    $('#menu').setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
+  $('#scrim').addEventListener('click', closeRail);
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeRail();
+  });
+
+  function clock() {
+    var d = new Date();
+    $('#clock').textContent = [d.getHours(), d.getMinutes(), d.getSeconds()].map(function (n) {
+      return String(n).padStart(2, '0');
+    }).join(':');
+  }
+
+  renderApps();
+  renderRoster();
+  renderStrikes();
+  renderLog();
+  clock();
+  setInterval(clock, 1000);
+  setInterval(tick, 1000);
+  setInterval(renderLog, 60000);
+})();
+</script>
+</body>
+</html>
