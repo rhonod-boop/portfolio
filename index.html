@@ -255,6 +255,17 @@ h1 em{font-style:italic;color:var(--accent)}
 .pj-body{padding:18px 20px 20px}
 .pj-name{font-family:var(--serif);font-size:1.5rem;line-height:1.1;letter-spacing:-.01em}
 .pj-desc{margin-top:6px;color:var(--muted);font-size:.95rem;line-height:1.6;text-wrap:pretty}
+.pj:focus-visible{outline:2px solid rgba(217,255,87,.5);outline-offset:3px}
+.pj-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:16px}
+.pj-btn{
+  display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;
+  border:1px solid var(--line-2);font:500 12.5px/1 var(--sans);color:var(--text);
+  transition:background .25s,border-color .25s;
+}
+.pj-btn .ico{width:13px;height:13px;color:var(--accent);transition:transform .32s cubic-bezier(.2,.7,.2,1)}
+.pj:hover .pj-btn,.pj:focus-visible .pj-btn{background:rgba(217,255,87,.1);border-color:rgba(217,255,87,.45)}
+.pj:hover .pj-btn .ico{transform:translate(2px,-2px)}
+.pj-note{font:400 10px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--dim)}
 .work-empty{max-width:62ch}
 .work-empty p{color:var(--muted);font-size:clamp(.98rem,1.1vw,1.05rem);line-height:1.68;text-wrap:pretty}
 .work-empty .btn{margin-top:clamp(20px,2.6vw,26px)}
@@ -853,7 +864,8 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const PROJECTS = [
     {
       name: "Bart's UncopyLocked Management",
-      desc: 'Staff management bot — promote, demote, and strikes with expiry. Open the interactive console mock.',
+      desc: 'Staff management bot — promote, demote, and strikes with expiry, strike history and more.',
+      cta: 'Open the console',
       shot: 'project/staff-management.png',
       href: 'project/staff-management-app.html',
     },
@@ -913,6 +925,7 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       card.href = p.href;
       card.target = '_blank';
       card.rel = 'noopener';
+      card.setAttribute('aria-label', p.name + ' — ' + p.cta);
     }
 
     if (p.shot) {
@@ -948,6 +961,22 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     desc.className = 'pj-desc';
     desc.textContent = p.desc;
     body.append(name, desc);
+
+    if (p.cta) {
+      const actions = document.createElement('div');
+      actions.className = 'pj-actions';
+      const open = document.createElement('span');
+      open.className = 'pj-btn';
+      open.innerHTML =
+        '<span></span><svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 13 13 3M13 3H6M13 3v7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      open.firstChild.textContent = p.cta;
+      const note = document.createElement('span');
+      note.className = 'pj-note';
+      note.textContent = 'demo · nothing saved';
+      actions.append(open, note);
+      body.append(actions);
+    }
+
     card.append(body);
     grid.append(card);
   });
