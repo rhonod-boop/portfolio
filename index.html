@@ -266,6 +266,10 @@ h1 em{font-style:italic;color:var(--accent)}
 .pj:hover .pj-btn,.pj:focus-visible .pj-btn{background:rgba(217,255,87,.1);border-color:rgba(217,255,87,.45)}
 .pj:hover .pj-btn .ico{transform:translate(2px,-2px)}
 .pj-note{font:400 10px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--dim)}
+.pj-specs{list-style:none;margin:16px 0 0;padding:0;border-top:1px solid rgba(255,255,255,.06)}
+.pj-specs li{display:flex;align-items:baseline;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06);font:400 11.5px/1.3 var(--mono);color:var(--dim)}
+.pj-specs li b{color:var(--text);font-weight:400}
+.pj-specs li:last-child{border-bottom:0;padding-bottom:0}
 .work-empty{max-width:62ch}
 .work-empty p{color:var(--muted);font-size:clamp(.98rem,1.1vw,1.05rem);line-height:1.68;text-wrap:pretty}
 .work-empty .btn{margin-top:clamp(20px,2.6vw,26px)}
@@ -865,9 +869,18 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     {
       name: "Bart's UncopyLocked Management",
       desc: 'Staff management bot — promote, demote, and strikes with expiry, strike history and more.',
-      cta: 'Open the console',
       shot: 'project/staff-management.png',
+    },
+    {
+      name: 'Web Demo',
+      desc: 'Interface mock for that bot — applications, roster, strikes with live expiry and the embed it posts.',
+      specs: [
+        ['Views', '5'],
+        ['Data', 'demo only'],
+        ['Build', 'none'],
+      ],
       href: 'project/staff-management-app.html',
+      cta: 'Open the demo',
     },
   ];
 
@@ -961,6 +974,21 @@ const REDUCE = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     desc.className = 'pj-desc';
     desc.textContent = p.desc;
     body.append(name, desc);
+
+    if (p.specs) {
+      const list = document.createElement('ul');
+      list.className = 'pj-specs';
+      p.specs.forEach((pair) => {
+        const li = document.createElement('li');
+        const key = document.createElement('span');
+        key.textContent = pair[0];
+        const val = document.createElement('b');
+        val.textContent = pair[1];
+        li.append(key, val);
+        list.append(li);
+      });
+      body.append(list);
+    }
 
     if (p.cta) {
       const actions = document.createElement('div');
